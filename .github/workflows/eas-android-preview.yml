@@ -1,0 +1,62 @@
+name: EAS Android preview build
+
+on:
+  # Manual trigger from the Actions tab
+  workflow_dispatch:
+  # Automatically build and attach APK when a release is published
+  release:
+    types: [published]
+
+jobs:
+  build-android-preview:
+    runs-on: ubuntu-latest
+
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Install dependencies
+        working-directory: festo-mobile
+        run: yarn install --frozen-lockfile
+
+      - name: Run EAS Android preview build
+        working-directory: festo-mobile
+        run: |
+          eas build --profile preview --platform android --non-interactive
+
+      - name: Prepare artifacts directory
+        run: mkdir -p artifacts
+
+      - name: Download latest Android preview build artifact
+        working-directory: festo-mobile
+        run: |
+          eas build:download \
+            --platform android \
+            --profile preview \
+            --latest \
+            --non-interactive \
+            --output ../artifacts/festo-android-preview.apk
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: festo-android-preview-apk
+          path: artifacts/festo-android-preview.apk
+
+      - name: Attach APK to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/festo-android-preview.apk
+
