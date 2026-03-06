@@ -41,11 +41,14 @@ export const PINGONE_CONFIG = {
   }/users`,
 
   // Redirect URI (must match PingOne configuration exactly).
-  // Use a concrete path to satisfy PingOne's validation.
-  redirectUrl: AuthSession.makeRedirectUri({
-    scheme: "festo-mobile",
-    path: "callback",
-  }),
+  // Set EXPO_PUBLIC_PINGONE_REDIRECT_URI to use backend proxy (e.g. https://your-backend.com/pingone/callback).
+  // When unset, uses app deep link: festo-mobile://callback
+  redirectUrl:
+    process.env.EXPO_PUBLIC_PINGONE_REDIRECT_URI ||
+    AuthSession.makeRedirectUri({
+      scheme: "festo-mobile",
+      path: "callback",
+    }),
 
   // Scopes requested from PingOne
   scopes: ["openid", "profile", "email"],

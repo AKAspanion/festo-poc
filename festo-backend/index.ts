@@ -129,12 +129,15 @@ app.get("/health", (_req: Request, res: Response): void => {
  * HTTPS redirect target for PingOne.
  *
  * PingOne requires an HTTPS redirect URI. This endpoint is registered in
- * PingOne and immediately forwards the browser to the mobile app's deep link
- * while preserving all query parameters (code, state, etc.).
+ * PingOne. We return 200 with an HTML page so the in-app browser "lands" on
+ * this URL (with code/state in the query). That lets expo-auth-session detect
+ * the redirect and return success. The HTML then redirects to the app deep link
+ * so the browser closes.
  *
  * Redirect chain:
- *   PingOne → https://festo-poc.onrender.com/pingone/callback
- *           → festo-mobile://callback
+ *   PingOne → GET /pingone/callback?code=...&state=...
+ *           → 200 HTML (browser stays on this URL briefly; AuthSession can capture it)
+ *           → client-side redirect → festo-mobile://callback?...
  */
 app.get("/pingone/callback", (req: Request, res: Response): void => {
   const queryParams = req.query as Record<string, string | string[] | undefined>;
@@ -157,11 +160,30 @@ app.get("/pingone/callback", (req: Request, res: Response): void => {
     ? `${mobileRedirectBase}?${searchParams.toString()}`
     : mobileRedirectBase;
 
-  logInfo("Redirecting PingOne callback to mobile app", {
+  logInfo("PingOne callback: serving HTML so browser lands on redirect URI", {
     target: redirectTarget,
   });
 
-  res.redirect(302, redirectTarget);
+  const escapedRedirect = redirectTarget
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  res.status(200).set("Content-Type", "text/html; charset=utf-8").send(
+    `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="1;url=${escapedRedirect}">
+  <title>Redirecting to app</title>
+</head>
+<body>
+  <p>Sign-in successful. Redirecting to app...</p>
+  <script>window.location.href = ${JSON.stringify(redirectTarget)};</script>
+</body>
+</html>`,
+  );
 });
 
 /**
