@@ -126,6 +126,45 @@ app.get("/health", (_req: Request, res: Response): void => {
 });
 
 /**
+ * HTTPS redirect target for PingOne.
+ *
+ * PingOne requires an HTTPS redirect URI. This endpoint is registered in
+ * PingOne and immediately forwards the browser to the mobile app's deep link
+ * while preserving all query parameters (code, state, etc.).
+ *
+ * Redirect chain:
+ *   PingOne → https://festo-poc.onrender.com/pingone/callback
+ *           → festo-mobile://callback
+ */
+app.get("/pingone/callback", (req: Request, res: Response): void => {
+  const queryParams = req.query as Record<string, string | string[] | undefined>;
+
+  const searchParams = new URLSearchParams();
+  Object.entries(queryParams).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((v) => {
+        if (v != null) {
+          searchParams.append(key, v);
+        }
+      });
+    } else if (value != null) {
+      searchParams.append(key, value);
+    }
+  });
+
+  const mobileRedirectBase = "festo-mobile://callback";
+  const redirectTarget = searchParams.toString()
+    ? `${mobileRedirectBase}?${searchParams.toString()}`
+    : mobileRedirectBase;
+
+  logInfo("Redirecting PingOne callback to mobile app", {
+    target: redirectTarget,
+  });
+
+  res.redirect(302, redirectTarget);
+});
+
+/**
  * POST /exchange-code
  * Exchange authorization code for tokens
  */
