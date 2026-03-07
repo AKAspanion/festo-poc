@@ -32,8 +32,14 @@ fi
 APK_PATH="app/build/outputs/apk/release/app-release.apk"
 AAB_PATH="app/build/outputs/bundle/release/app-release.aab"
 
+BUILDS_DIR="$APP_ROOT/builds"
+mkdir -p "$BUILDS_DIR"
+cp "$APK_PATH" "$BUILDS_DIR/app-release.apk"
+cp "$AAB_PATH" "$BUILDS_DIR/app-release.aab"
+
 echo ""
 echo "✅ Android release build finished."
 echo "   APK (for emulator / direct install): ${APK_PATH}"
 echo "   AAB (Play Store upload):            ${AAB_PATH}"
+echo "   Copies in festo-mobile/builds/:     app-release.apk, app-release.aab"
 
