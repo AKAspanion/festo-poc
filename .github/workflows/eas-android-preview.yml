@@ -61,9 +61,26 @@ jobs:
           name: festo-android-preview-apk
           path: artifacts/festo-android-preview.apk
 
-      - name: Attach APK to GitHub Release
-        if: github.event_name == 'release'
+      - name: Set release tag and name
+        id: release
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+            echo "name=${{ github.event.release.name }}" >> $GITHUB_OUTPUT
+            echo "draft=false" >> $GITHUB_OUTPUT
+          else
+            echo "tag_name=android-preview-${{ github.run_id }}" >> $GITHUB_OUTPUT
+            echo "name=Android Preview #${{ github.run_id }}" >> $GITHUB_OUTPUT
+            echo "draft=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create or update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/festo-android-preview.apk
+          tag_name: ${{ steps.release.outputs.tag_name }}
+          name: ${{ steps.release.outputs.name }}
+          draft: ${{ steps.release.outputs.draft }}
+          generate_release_notes: true
+          make_latest: ${{ github.event_name == 'release' }}
 
