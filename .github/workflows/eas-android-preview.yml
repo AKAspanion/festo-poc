@@ -32,10 +32,10 @@ jobs:
         working-directory: festo-mobile
         run: yarn install --frozen-lockfile
 
-      # - name: Run EAS Android preview build
-      #   working-directory: festo-mobile
-      #   run: |
-      #     eas build --profile preview --platform android --non-interactive
+      - name: Run EAS Android preview build
+        working-directory: festo-mobile
+        run: |
+          eas build --profile preview --platform android --non-interactive
 
       - name: Prepare artifacts directory
         run: mkdir -p artifacts
