@@ -73,8 +73,16 @@ jobs:
           else
             echo "tag_name=android-preview-${{ github.run_id }}" >> $GITHUB_OUTPUT
             echo "name=Android Preview #${{ github.run_id }}" >> $GITHUB_OUTPUT
-            echo "draft=true" >> $GITHUB_OUTPUT
+            echo "draft=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Create and push tag (manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.release.outputs.tag_name }}"
+          git push origin "${{ steps.release.outputs.tag_name }}"
 
       - name: Create or update GitHub Release
         uses: softprops/action-gh-release@v2
@@ -84,5 +92,5 @@ jobs:
           name: ${{ steps.release.outputs.name }}
           draft: ${{ steps.release.outputs.draft }}
           generate_release_notes: true
-          make_latest: ${{ github.event_name == 'release' }}
+          make_latest: true
 
