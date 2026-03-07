@@ -10,6 +10,8 @@ on:
 jobs:
   build-android-preview:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # required to create releases and upload assets
 
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
