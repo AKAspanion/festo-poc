@@ -12,6 +12,7 @@ import axios from "axios";
 import { useAuth } from "../context/useAuth";
 import { PINGONE_CONFIG } from "../config/pingone-config";
 import { logger } from "../utils/logger";
+import { ShopLauncher } from "../components/ShopLauncher";
 
 // Ensure the web browser is available
 WebBrowser.maybeCompleteAuthSession();
@@ -148,10 +149,7 @@ export const LoginScreen: React.FC = () => {
         )}
 
         <TouchableOpacity
-          style={[
-            styles.loginButton,
-            isLoading && styles.loginButtonDisabled,
-          ]}
+          style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
           onPress={handleLoginPress}
           disabled={isLoading}
         >
@@ -161,6 +159,8 @@ export const LoginScreen: React.FC = () => {
             <Text style={styles.loginButtonText}>Login with PingOne</Text>
           )}
         </TouchableOpacity>
+
+        <ShopLauncher />
 
         <View style={styles.infoContainer}>
           <Text style={styles.infoText}>

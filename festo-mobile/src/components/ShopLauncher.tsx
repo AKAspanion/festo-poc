@@ -39,14 +39,17 @@ export const ShopLauncher: React.FC = () => {
   });
 
   const shopBaseUrl =
-    Platform.OS === "android"
-      ? "http://192.168.1.8:8081"
-      : "http://localhost:8081";
+    process.env.EXPO_PUBLIC_SHOP_BASE_URL ||
+    (Platform.OS === "android"
+      ? "http://192.168.1.14:8081"
+      : "http://localhost:8081");
 
   const buildShopAuthUrl = () => {
     const token = shopToken.trim() || "123";
-    return `${shopBaseUrl}/?shop_token=${encodeURIComponent(token)}`;
+    return `${shopBaseUrl}/shop?token=${encodeURIComponent(token)}`;
   };
+
+  const currentShopUrl = buildShopAuthUrl();
 
   const handleOpenShop = async () => {
     try {
@@ -117,9 +120,18 @@ export const ShopLauncher: React.FC = () => {
           value={shopToken}
           onChangeText={setShopToken}
           placeholder="Enter shop token"
+          multiline
+          textAlignVertical="top"
           autoCapitalize="none"
           autoCorrect={false}
         />
+      </View>
+
+      <View style={styles.shopUrlContainer}>
+        <Text style={styles.shopUrlLabel}>Shop URL</Text>
+        <Text style={styles.shopUrlValue}>
+          {currentShopUrl}
+        </Text>
       </View>
 
       <TouchableOpacity
@@ -140,6 +152,20 @@ export const ShopLauncher: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
+  },
+  shopUrlContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  shopUrlLabel: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 4,
+    fontWeight: "500",
+  },
+  shopUrlValue: {
+    fontSize: 12,
+    color: "#555",
   },
   shopButton: {
     backgroundColor: "#007AFF",
@@ -177,5 +203,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
     backgroundColor: "#fff",
+    minHeight: 80,
   },
 });
